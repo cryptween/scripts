@@ -1,0 +1,14 @@
+# node's modules
+node_modules
+
+# Visual code files
+.vscode
+
+# contracts
+contracts
+
+# executables
+dist
+bin
+!bin/createNodejsApp.js
+
