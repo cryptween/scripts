@@ -4,4 +4,11 @@ node_modules
 # Visual code files
 .vscode
 
-cryptween-daemon*
+# contracts
+contracts
+
+# executables
+dist
+bin
+!bin/createNodejsApp.js
+
