@@ -28,16 +28,19 @@ fi
 
 if [ -f $CRYPTWEEN_BIN_DIR/cryptween-daemon-linux ];
 then
-    rm $CRYPTWEEN_BIN_DIR/cryptween-daemon-linux
+    sudo rm $CRYPTWEEN_BIN_DIR/cryptween-daemon-linux
 fi
 echo $ARTIFACT_URL
 
 sudo wget $ARTIFACT_URL -P $CRYPTWEEN_BIN_DIR
 
+sudo chmod 775 $CRYPTWEEN_BIN_DIR/cryptween-daemon-linux
+
 if [ -f /etc/systemd/system/cryptween.service ]; then
     sudo systemctl stop cryptween.service
     sudo systemctl disable cryptween.service
-else
+    sudo rm /etc/systemd/system/cryptween.service
+fi
 cat > cryptween.service <<EOL
 [Unit]
 Description=Cryptween daemon service
@@ -45,10 +48,19 @@ After=systend-user-sessions.service
 
 [Service]
 Type=simple
+WorkingDirectory=$CRYPTWEEN_BIN_DIR
 ExecStart=$CRYPTWEEN_BIN_DIR/cryptween-daemon-linux
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=CttWBot_Console
+
+[Install]
+WantedBy=multi-user.target
 EOL
-    sudo \cp -f ./cryptween.service /etc/systemd/system/cryptween.service
-fi
+
+sudo \cp -f ./cryptween.service /etc/systemd/system/cryptween.service
 
 sudo systemctl enable cryptween.service
 sudo systemctl start cryptween.service
