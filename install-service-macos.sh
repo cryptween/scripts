@@ -21,7 +21,7 @@ ARTIFACT_URL="https://github.com/cryptween/scripts/releases/download/$VERSION/$A
 
 #  Local crypween binaries dir
 CRYPTWEEN_BIN_DIR="/Applications/cryptween.app/Daemon"
-LAUNCHDAEMONS_DIR="/Library/LaunchDaemons"
+LAUNCHDAEMONS_DIR="/Library/LaunchAgents"
 LAUNCHDAEMONS_ID="com.cryptween"
 LAUNCHDAEMONS_FILE=$LAUNCHDAEMONS_ID".plist"
 
@@ -36,22 +36,23 @@ fi
 
 if [ -f $CRYPTWEEN_BIN_DIR/$APP_NAME ];
 then
-    sudo rm $CRYPTWEEN_BIN_DIR/$APP_NAME
+#    sudo rm $CRYPTWEEN_BIN_DIR/$APP_NAME
+echo ""
 fi
 echo $ARTIFACT_URL
 
-sudo curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
+#sudo curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
 
 sudo chmod 775 $CRYPTWEEN_BIN_DIR/$APP_NAME
 
 if [ -f $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE ]; then
-   sudo launchctl unload -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
+   launchctl unload -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
    sudo rm $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
 fi
 #else
-echo -n "Type something and press enter: ";
-read;
-INFLUXDB_TOKEN=${REPLY}
+#echo -n "Type something and press enter: ";
+#read;
+#INFLUXDB_TOKEN=${REPLY}
 cat > $LAUNCHDAEMONS_FILE <<EOL
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -68,10 +69,12 @@ cat > $LAUNCHDAEMONS_FILE <<EOL
   <string>$CRYPTWEEN_BIN_DIR/$APP_NAME</string>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
+  <!--
   <key>StandardOutPath</key>
-  <string>/tmp/startup.stdout</string>
+  <string>~/startup.stdout</string>
   <key>StandardErrorPath</key>
-  <string>/tmp/startup.stderr</string>  
+  <string>~/startup.stderr</string>
+  -->
 </dict>
 </plist>
 EOL
@@ -79,10 +82,16 @@ EOL
    rm $LAUNCHDAEMONS_FILE
 #fi
 
-sudo launchctl load -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
+launchctl load -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
 
 #You can stop the launchctl process by
 #sudo launchctl stop /Library/LaunchDaemons/com.cryptween.plist
 #You can start the launchctl process by
 #sudo launchctl start -w /Library/LaunchDaemons/com.cryptween.plist
 # sudo launchctl print /Library/LaunchDaemons/com.cryptween.plist
+
+#You can stop the launchctl process by
+#sudo launchctl stop /Library/LaunchAgents/com.cryptween.plist
+#You can start the launchctl process by
+#sudo launchctl start -w /Library/LaunchAgents/com.cryptween.plist
+# sudo launchctl print /Library/LaunchAgents/com.cryptween.plist
