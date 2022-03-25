@@ -36,12 +36,12 @@ fi
 
 if [ -f $CRYPTWEEN_BIN_DIR/$APP_NAME ];
 then
-#    sudo rm $CRYPTWEEN_BIN_DIR/$APP_NAME
+    sudo rm $CRYPTWEEN_BIN_DIR/$APP_NAME
 echo ""
 fi
 echo $ARTIFACT_URL
 
-#sudo curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
+sudo curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
 
 sudo chmod 775 $CRYPTWEEN_BIN_DIR/$APP_NAME
 
