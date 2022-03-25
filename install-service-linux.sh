@@ -25,6 +25,8 @@ CRYPTWEEN_BIN_DIR="/opt/cryptween/bin"
 
 if [ -d $CRYPTWEEN_BIN_DIR ];
 then
+    echo "Installing config files in $CRYPTWEEN_BIN_DIR..."
+else
     sudo mkdir -p $CRYPTWEEN_BIN_DIR
 fi
 

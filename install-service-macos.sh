@@ -28,7 +28,10 @@ LAUNCHDAEMONS_FILE=$LAUNCHDAEMONS_ID".plist"
 
 if [ -d $CRYPTWEEN_BIN_DIR ];
 then
-    mkdir -p $CRYPTWEEN_BIN_DIR
+    echo "Installing config files in $CRYPTWEEN_BIN_DIR..."
+else
+    echo "Creating dir $CRYPTWEEN_BIN_DIR..."
+    sudo mkdir -p $CRYPTWEEN_BIN_DIR
 fi
 
 if [ -f $CRYPTWEEN_BIN_DIR/$APP_NAME ];
@@ -37,29 +40,44 @@ then
 fi
 echo $ARTIFACT_URL
 
-curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
+sudo curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
 
 sudo chmod 775 $CRYPTWEEN_BIN_DIR/$APP_NAME
 
 if [ -f $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE ]; then
    sudo launchctl unload -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
-else
+   sudo rm $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
+fi
+#else
+echo -n "Type something and press enter: ";
+read;
+INFLUXDB_TOKEN=${REPLY}
 cat > $LAUNCHDAEMONS_FILE <<EOL
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>INFLUXDB_TOKEN</key>
+    <string>$INFLUXDB_TOKEN</string>
+  </dict>
   <key>Label</key>
   <string>$LAUNCHDAEMONS_ID</string>
   <key>Program</key>
   <string>$CRYPTWEEN_BIN_DIR/$APP_NAME</string>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/startup.stdout</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/startup.stderr</string>  
 </dict>
 </plist>
 EOL
    sudo \cp -f ./$LAUNCHDAEMONS_FILE $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
-fi
+   rm $LAUNCHDAEMONS_FILE
+#fi
 
 sudo launchctl load -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
 
@@ -67,3 +85,4 @@ sudo launchctl load -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
 #sudo launchctl stop /Library/LaunchDaemons/com.cryptween.plist
 #You can start the launchctl process by
 #sudo launchctl start -w /Library/LaunchDaemons/com.cryptween.plist
+# sudo launchctl print /Library/LaunchDaemons/com.cryptween.plist
