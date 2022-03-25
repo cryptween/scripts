@@ -8,6 +8,8 @@ else
 echo "INFLUXDB_TOKEN enviroment variable is correctly set";
 fi
 
+APP_NAME=cryptween-daemon-linux
+
 if [ $# -eq 0 ]; then
     LATEST_RELEASE=$(curl -L -s -H 'Accept: application/json' https://github.com/cryptween/scripts/releases/latest)
     # The releases are returned in the format {"id":3622206,"tag_name":"hello-1.0.0.11",...}, we have to extract the tag_name.
@@ -15,7 +17,7 @@ if [ $# -eq 0 ]; then
 else
     VERSION=$1                                                                                                                                                                                                                                                                   
 fi 
-ARTIFACT_URL="https://github.com/cryptween/scripts/releases/download/$VERSION/cryptween-daemon-linux"
+ARTIFACT_URL="https://github.com/cryptween/scripts/releases/download/$VERSION/$APP_NAME"
 
 #  Local crypween binaries dir
 # CRYPTWEEN_BIN_DIR="/usr/local/bin/cryptween"
@@ -26,15 +28,15 @@ then
     sudo mkdir -p $CRYPTWEEN_BIN_DIR
 fi
 
-if [ -f $CRYPTWEEN_BIN_DIR/cryptween-daemon-linux ];
+if [ -f $CRYPTWEEN_BIN_DIR/$APP_NAME ];
 then
-    sudo rm $CRYPTWEEN_BIN_DIR/cryptween-daemon-linux
+    sudo rm $CRYPTWEEN_BIN_DIR/$APP_NAME
 fi
 echo $ARTIFACT_URL
 
-sudo wget $ARTIFACT_URL -P $CRYPTWEEN_BIN_DIR
+curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
 
-sudo chmod 775 $CRYPTWEEN_BIN_DIR/cryptween-daemon-linux
+sudo chmod 775 $CRYPTWEEN_BIN_DIR/$APP_NAME
 
 if [ -f /etc/systemd/system/cryptween.service ]; then
     sudo systemctl stop cryptween.service
@@ -49,7 +51,7 @@ After=systend-user-sessions.service
 [Service]
 Type=simple
 WorkingDirectory=$CRYPTWEEN_BIN_DIR
-ExecStart=$CRYPTWEEN_BIN_DIR/cryptween-daemon-linux
+ExecStart=$CRYPTWEEN_BIN_DIR/$APP_NAME
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
 StandardOutput=syslog

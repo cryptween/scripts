@@ -20,8 +20,11 @@ fi
 ARTIFACT_URL="https://github.com/cryptween/scripts/releases/download/$VERSION/$APP_NAME"
 
 #  Local crypween binaries dir
-# CRYPTWEEN_BIN_DIR="/usr/local/bin/cryptween"
-CRYPTWEEN_BIN_DIR="./"
+CRYPTWEEN_BIN_DIR="/Applications/cryptween.app/Daemon"
+LAUNCHDAEMONS_DIR="/Library/LaunchDaemons"
+LAUNCHDAEMONS_ID="com.cryptween"
+LAUNCHDAEMONS_FILE=$LAUNCHDAEMONS_ID".plist"
+
 
 if [ -d $CRYPTWEEN_BIN_DIR ];
 then
@@ -30,28 +33,37 @@ fi
 
 if [ -f $CRYPTWEEN_BIN_DIR/$APP_NAME ];
 then
-    rm $CRYPTWEEN_BIN_DIR/$APP_NAME
+    sudo rm $CRYPTWEEN_BIN_DIR/$APP_NAME
 fi
 echo $ARTIFACT_URL
 
 curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
 
+sudo chmod 775 $CRYPTWEEN_BIN_DIR/$APP_NAME
 
-#if [ -f /etc/systemd/system/cryptween.service ]; then
-#    sudo systemctl stop cryptween.service
-#    sudo systemctl disable cryptween.service
-#else
-#cat > cryptween.service <<EOL
-#[Unit]
-#Description=Cryptween daemon service
-#After=systend-user-sessions.service
+if [ -f $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE ]; then
+   sudo launchctl unload -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
+else
+cat > $LAUNCHDAEMONS_FILE <<EOL
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>$LAUNCHDAEMONS_ID</string>
+  <key>Program</key>
+  <string>$CRYPTWEEN_BIN_DIR/$APP_NAME</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+</dict>
+</plist>
+EOL
+   sudo \cp -f ./$LAUNCHDAEMONS_FILE $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
+fi
 
-#[Service]
-#Type=simple
-#ExecStart=$CRYPTWEEN_BIN_DIR/$APP_NAME
-#EOL
-#    sudo \cp -f ./cryptween.service /etc/systemd/system/cryptween.service
-#fi
+sudo launchctl load -w $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
 
-#sudo systemctl enable cryptween.service
-#sudo systemctl start cryptween.service
+#You can stop the launchctl process by
+#sudo launchctl stop /Library/LaunchDaemons/com.cryptween.plist
+#You can start the launchctl process by
+#sudo launchctl start -w /Library/LaunchDaemons/com.cryptween.plist
