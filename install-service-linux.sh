@@ -22,7 +22,12 @@ ARTIFACT_URL="https://github.com/cryptween/scripts/releases/download/$VERSION/$A
 #  Local crypween binaries dir
 # CRYPTWEEN_BIN_DIR="/usr/local/bin/cryptween"
 CRYPTWEEN_BIN_DIR="/opt/cryptween/bin"
+LAUNCHDAEMONS_DIR="/etc/systemd/user"
+LAUNCHDAEMONS_ID="cryptween"
+LAUNCHDAEMONS_FILE=$LAUNCHDAEMONS_ID".service"
 
+ENV_DAEMONS_DIR="$HOME/.config/environment.d"
+ENV_DAEMONS_FILENAME="90-cryptween.conf"
 if [ -d $CRYPTWEEN_BIN_DIR ];
 then
     echo "Installing config files in $CRYPTWEEN_BIN_DIR..."
@@ -34,18 +39,37 @@ if [ -f $CRYPTWEEN_BIN_DIR/$APP_NAME ];
 then
     sudo rm $CRYPTWEEN_BIN_DIR/$APP_NAME
 fi
+
+# Enviroment conf files
+if [ -d $ENV_DAEMONS_DIR ];
+then
+    echo "Configuration Directory in $ENV_DAEMONS_DIR..."
+else
+    echo "Creating $ENV_DAEMONS_DIR"
+    mkdir -p $ENV_DAEMONS_DIR
+fi
+
+if [ -f $ENV_DAEMONS_DIR/$ENV_DAEMONS_FILENAME ];
+then
+    echo "Configuration file in $ENV_DAEMONS_DIR/$ENV_DAEMONS_FILENAME..."
+else
+cat > $ENV_DAEMONS_DIR/$ENV_DAEMONS_FILENAME <<EOL
+INFLUXDB_TOKEN=$INFLUXDB_TOKEN
+EOL
+fi
+
 echo $ARTIFACT_URL
 
-curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
+sudo curl  -L $ARTIFACT_URL -o $CRYPTWEEN_BIN_DIR/$APP_NAME 
 
 sudo chmod 775 $CRYPTWEEN_BIN_DIR/$APP_NAME
 
-if [ -f /etc/systemd/system/cryptween.service ]; then
-    sudo systemctl stop cryptween.service
-    sudo systemctl disable cryptween.service
-    sudo rm /etc/systemd/system/cryptween.service
+if [ -f $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE ]; then
+    systemctl --user stop $LAUNCHDAEMONS_FILE
+    systemctl --user disable $LAUNCHDAEMONS_FILE
+    sudo rm $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
 fi
-cat > cryptween.service <<EOL
+cat > $LAUNCHDAEMONS_FILE <<EOL
 [Unit]
 Description=Cryptween daemon service
 After=systend-user-sessions.service
@@ -61,10 +85,11 @@ StandardError=syslog
 SyslogIdentifier=CttWBot_Console
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 EOL
 
-sudo \cp -f ./cryptween.service /etc/systemd/system/cryptween.service
+sudo \cp -f ./$LAUNCHDAEMONS_FILE $LAUNCHDAEMONS_DIR/$LAUNCHDAEMONS_FILE
+rm $LAUNCHDAEMONS_FILE
 
-sudo systemctl enable cryptween.service
-sudo systemctl start cryptween.service
+systemctl --user enable $LAUNCHDAEMONS_FILE
+systemctl --user start $LAUNCHDAEMONS_FILE
