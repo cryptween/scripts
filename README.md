@@ -31,4 +31,7 @@ Cryptween use the configuration files in the environment.d/ directories that con
 
 The configuration files contain a list of "KEY=VALUE" environment variable assignments, separated by newlines. The right hand side of these assignments may reference previously defined environment variables, using the "${OTHER_KEY}" and "$OTHER_KEY" format.
 
+systemctl --user enable cryptween.service
+systemctl --user start cryptween.service
+
 journalctl --user -u cryptween -f
