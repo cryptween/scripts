@@ -35,3 +35,38 @@ systemctl --user enable cryptween.service
 systemctl --user start cryptween.service
 
 journalctl --user -u cryptween -f
+
+## Windows
+### Requeriments
+- [PowerShell](https://docs.microsoft.com/powershell)
+All modern versions of Windows operating systems ship with PowerShell installed. If you're running a version older than 5.1, you should install the latest version.
+- run PowerShell as administrator
+- Verify that the PowerShell terminal permits the execution of an script by verifiying the execution policy. PowerShell scripts can't be run at all when the execution policy is set to Restricted. This is the default setting on all Windows client operating systems. E.g.
+PowerShell
+~~~
+    Get-ExecutionPolicy
+~~~
+Output
+~~~
+    Restricted
+~~~
+
+Change the execution policy. For example
+~~~
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+~~~
+
+- go to location of the script. E.g.
+~~~
+     cd C:\Users\username\Documents
+~~~
+
+- execute the script
+~~~
+     .\install-service-win.ps1
+~~~
+
+#### Check service
+- Windows + R
+
+- type "services.msc"
