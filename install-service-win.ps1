@@ -1,5 +1,7 @@
 # Download latest dotnet/codeformatter release from github
 
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
 $repo = "cryptween/scripts"
 $file = "cryptween-daemon-win.exe"
 
